@@ -1,19 +1,25 @@
 import React, { Component } from "react";
 import dateFns from "date-fns";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import * as actions from "../actions/actions";
+import { connect } from "react-redux";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarBody } from "./CalendarBody";
-
-export default class Calendar extends Component {
+import { AddReminder } from "./AddReminder";
+import { stat } from "fs";
+class Calendar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentMonth: new Date()
+      currentMonth: new Date(),
+      open: false,
     };
     this.nextMonth = this.nextMonth.bind(this);
     this.prevMonth = this.prevMonth.bind(this);
     this.onDateClick = this.onDateClick.bind(this);
+    this.handleAdd = this.handleAdd.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
+
   nextMonth() {
     this.setState({
       currentMonth: dateFns.addMonths(this.state.currentMonth, 1)
@@ -25,6 +31,20 @@ export default class Calendar extends Component {
       currentMonth: dateFns.subMonths(this.state.currentMonth, 1)
     });
   }
+
+  onDateClick() {
+    this.setState({ open: true });
+  }
+
+  handleAdd = reminder => {
+    this.setState({ open: false });
+    this.props.addReminder(reminder);
+  };
+
+  handleClose = () => {
+    this.setState({ open: false });
+  };
+
   renderDays() {
     let days = [
       "Sunday",
@@ -44,12 +64,14 @@ export default class Calendar extends Component {
     );
   }
 
-  onDateClick() {
-    alert("date");
-  }
   render() {
     return (
       <div>
+        <AddReminder
+          open={this.state.open}
+          handleAdd={(text, color) => this.handleAdd(text, color)}
+          handleClose={this.handleClose}
+        />
         <CalendarHeader
           currentMonth={this.state.currentMonth}
           nextMonth={this.nextMonth}
@@ -59,6 +81,7 @@ export default class Calendar extends Component {
         <CalendarBody
           currentMonth={this.state.currentMonth}
           onDateClick={this.onDateClick}
+          reminder={this.props.reminders}
         />
       </div>
     );
@@ -83,3 +106,16 @@ const styles = {
     alignContent: "center"
   }
 };
+
+const mapStateToProps = state => ({
+  ...state
+});
+
+const mapDispatchToProps = dispatch => ({
+  addReminder: reminder => dispatch(actions.addReminderAction(reminder))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Calendar);

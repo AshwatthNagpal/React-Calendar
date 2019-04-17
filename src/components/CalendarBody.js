@@ -1,10 +1,18 @@
 import React, { Component } from "react";
 import dateFns from "date-fns";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-
+import * as actions from "../actions/actions";
+import { connect } from "react-redux";
 export class CalendarBody extends Component {
   constructor(props) {
     super(props);
+    console.log(props);
+  }
+
+  getReminders() {
+    if (!this.props.reminder) return [];
+    return this.props.reminders.map(r => (
+      <p style={{ color: r.color }}>{r.description + " " + r.time}</p>
+    ));
   }
 
   render() {
@@ -31,7 +39,10 @@ export class CalendarBody extends Component {
                 : styles.cell
             }
             key={day}
-            onClick={() => this.props.onDateClick()}
+            onClick={() => {
+              console.log(this.props.reminders)
+              this.props.onDateClick();
+            }}
           >
             <span
               style={
@@ -53,7 +64,11 @@ export class CalendarBody extends Component {
       );
       days = [];
     }
-    return <div style={styles.columns}>{rows}</div>;
+    return (
+      <div>
+        <div style={styles.columns}>{rows}</div>
+      </div>
+    );
   }
 }
 
@@ -81,13 +96,15 @@ const styles = {
   sameMonthNumber: {
     fontWeight: "bold",
     fontSize: "20px",
-    margin: "15px",
+    marginTop: "10px",
+    marginLeft: "10px",
     color: "#4259f4"
   },
   diffMonthNumber: {
     fontWeight: "bold",
     fontSize: "20px",
-    margin: "15px",
+    marginTop: "10px",
+    marginLeft: "10px",
     color: "#68696b"
   },
   columns: {
@@ -97,3 +114,16 @@ const styles = {
     display: "flex"
   }
 };
+
+const mapStateToProps = state => ({
+  ...state
+});
+
+const mapDispatchToProps = dispatch => ({
+  deleteReminder: id => dispatch(actions.deleteReminderAction(id))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(CalendarBody);
